@@ -582,7 +582,7 @@ private:
 
 } // namespace
 
-int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR commandLine, int) noexcept {
+int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR commandLine, int) {
   const std::wstring_view arguments = commandLine != nullptr ? commandLine : L"";
   const bool unattendedTest = arguments.find(L"--self-test") != std::wstring_view::npos ||
                               arguments.find(L"--ui-smoke-test") != std::wstring_view::npos;
