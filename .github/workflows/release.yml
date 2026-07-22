@@ -1,0 +1,85 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  quality:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
+  publish-beta:
+    needs: quality
+    runs-on: windows-2022
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Download the artifact that passed the full quality workflow
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: LocalVoiceChanger-Windows-x64
+          path: dist
+      - name: Verify tag and exact distributed ZIP again
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:GITHUB_REF_NAME -notmatch '^v\d+\.\d+\.\d+$') {
+            throw "Release tag must use vMAJOR.MINOR.PATCH"
+          }
+          $expectedVersion = $env:GITHUB_REF_NAME.Substring(1)
+          $head = (git rev-parse HEAD).Trim()
+          $tagCommit = (git rev-parse "$env:GITHUB_REF_NAME^{commit}").Trim()
+          if ($head -ne $tagCommit -or $head -ne $env:GITHUB_SHA) {
+            throw "Checked-out commit, tag target, and GitHub event SHA must match"
+          }
+          $defaultBranch = (gh api "repos/$env:GITHUB_REPOSITORY" --jq '.default_branch').Trim()
+          $defaultCommit =
+            (gh api "repos/$env:GITHUB_REPOSITORY/commits/$defaultBranch" --jq '.sha').Trim()
+          if ($head -ne $defaultCommit) {
+            throw "Release tag must point to the current default-branch commit"
+          }
+          $cmake = Get-Content CMakeLists.txt -Raw
+          if (-not $cmake.Contains("VERSION $expectedVersion")) {
+            throw "Tag $env:GITHUB_REF_NAME does not match the CMake project version"
+          }
+          $notes = ".github/release-notes/$env:GITHUB_REF_NAME.md"
+          if (-not (Test-Path $notes)) {
+            throw "Release notes are missing: $notes"
+          }
+          if (-not (Get-Content $notes -Raw).Contains("Version: $expectedVersion")) {
+            throw "Release notes version metadata does not match $env:GITHUB_REF_NAME"
+          }
+          ./scripts/verify-windows-package.ps1 -ExpectedVersion $expectedVersion
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373
+        with:
+          subject-path: dist/LocalVoiceChanger-Windows-x64.zip
+      - name: Create public beta prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $notes = ".github/release-notes/$env:GITHUB_REF_NAME.md"
+          gh release create $env:GITHUB_REF_NAME `
+            dist/LocalVoiceChanger-Windows-x64.zip `
+            dist/SHA256SUMS.txt `
+            --verify-tag `
+            --prerelease `
+            --title "Local Voice Changer $env:GITHUB_REF_NAME (public beta)" `
+            --notes-file $notes

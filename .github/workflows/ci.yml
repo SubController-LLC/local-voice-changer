@@ -1,0 +1,87 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check tracked public files
+        shell: bash
+        run: |
+          public_pattern='(BEGIN (RSA |EC |OPENSSH )?PRI''VATE KEY|gh[pousr]_[A-Za-z0-9_]{20,}|github_''pat_|AKIA[0-9A-Z]{16}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})'
+          if git grep -I -nE "$public_pattern"; then
+            echo "Tracked source contains a credential-like token or personal email"
+            exit 1
+          fi
+          if git ls-files | grep -Ei '(^|/)(settings\.json|metrics\.json|.*\.(wav|mp3|flac|ogg|m4a|log))$'; then
+            echo "Tracked source contains a settings export, audio sample, metric export, or log"
+            exit 1
+          fi
+
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install --yes clang-format
+      - name: Check formatting
+        run: bash scripts/check-format.sh
+
+  macos:
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [macos-debug, macos-asan]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure
+
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Configure
+        run: cmake --preset windows-msvc
+      - name: Build
+        run: cmake --build --preset windows-release
+      - name: Test
+        run: ctest --preset windows-release --output-on-failure
+      - name: Package portable application
+        shell: pwsh
+        run: ./scripts/package-windows.ps1
+      - name: Verify the exact distributed ZIP
+        shell: pwsh
+        run: ./scripts/verify-windows-package.ps1
+      - name: Upload Windows application
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: LocalVoiceChanger-Windows-x64
+          path: |
+            dist/LocalVoiceChanger-Windows-x64.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error

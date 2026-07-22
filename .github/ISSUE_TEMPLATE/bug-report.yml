@@ -1,0 +1,60 @@
+name: 不具合を報告する
+description: 公開ベータ版の再現可能な不具合を報告します
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        音声ファイル、氏名、Windowsのデバイス固有IDは添付しないでください。
+        セキュリティ上の問題は公開Issueではなく、Securityタブの非公開報告を利用してください。
+  - type: input
+    id: version
+    attributes:
+      label: アプリのバージョン
+      placeholder: v0.3.0
+    validations:
+      required: true
+  - type: dropdown
+    id: windows
+    attributes:
+      label: Windows
+      options:
+        - Windows 11 x64
+        - Windows 10 x64
+        - その他
+    validations:
+      required: true
+  - type: input
+    id: cable
+    attributes:
+      label: VB-CABLEのバージョン
+      description: 分かる範囲で入力してください。
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 起動から問題が起きるまでを順番に書いてください。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した結果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の結果
+      description: 画面に表示されたエラー、resync、deadline missの値があれば記載してください。
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: プライバシー確認
+      options:
+        - label: 音声、氏名、メールアドレス、デバイス固有IDを含めていません。
+          required: true

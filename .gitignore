@@ -1,0 +1,5 @@
+/build/
+/dist/
+/benchmark-output/
+/.DS_Store
+*.wav
