@@ -23,8 +23,11 @@ if ($LASTEXITCODE -ne 0) {
 
 Compress-Archive -Path (Join-Path $portableDirectory "*") -DestinationPath $zipPath
 $hash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
-"$hash  LocalVoiceChanger-Windows-x64.zip" |
-  Set-Content -LiteralPath $checksumPath -Encoding ascii
+[IO.File]::WriteAllText(
+  $checksumPath,
+  "$hash  LocalVoiceChanger-Windows-x64.zip`n",
+  [Text.Encoding]::ASCII
+)
 
 Write-Host "Created $zipPath"
 Write-Host "SHA-256: $hash"

@@ -37,9 +37,14 @@ try {
     throw "Expected version $ExpectedVersion does not match CMake project version $projectVersion"
   }
 
-  $checksumRecord = (Get-Content -LiteralPath $checksum -Raw).Trim()
-  if ($checksumRecord -notmatch '^([0-9a-fA-F]{64})  LocalVoiceChanger-Windows-x64\.zip$') {
-    throw "SHA256SUMS.txt must contain exactly one checksum record for the distributed ZIP"
+  $checksumBytes = [IO.File]::ReadAllBytes($checksum)
+  if ($checksumBytes.Length -eq 0 -or $checksumBytes[-1] -ne 0x0a -or
+      $checksumBytes -contains 0x0d) {
+    throw "SHA256SUMS.txt must use a single LF line ending"
+  }
+  $checksumRecord = [Text.Encoding]::ASCII.GetString($checksumBytes)
+  if ($checksumRecord -notmatch '^([0-9a-fA-F]{64})  LocalVoiceChanger-Windows-x64\.zip\n$') {
+    throw "SHA256SUMS.txt must contain exactly one portable checksum record"
   }
   $expectedChecksum = $Matches[1].ToLowerInvariant()
   $actualChecksum = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
