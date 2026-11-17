@@ -19,7 +19,7 @@ void copyProcessor(const std::span<const float> input, const std::span<float> ou
   std::ranges::copy(input, output.begin());
 }
 
-} // namespace
+}
 
 TEST_CASE("realtime pipeline caps stale backlog and recovers after a stall") {
   RealtimeAudioPipeline pipeline;
@@ -27,7 +27,6 @@ TEST_CASE("realtime pipeline caps stale backlog and recovers after a stall") {
   std::array<float, RealtimeAudioPipeline::kBlockFrames> block{};
   block.fill(0.25F);
 
-  // Withhold the worker and output consumer until the bound requests a reset.
   for (int tick = 0; tick < 8; ++tick) {
     (void)pipeline.pushInput(block);
   }
@@ -44,7 +43,6 @@ TEST_CASE("realtime pipeline caps stale backlog and recovers after a stall") {
   REQUIRE(pipeline.processOne(copyProcessor, [] {}) == true);
   REQUIRE(pipeline.stats().phase == PipelinePhase::running);
 
-  // Simulate one second of normalized callback/worker ticks.
   for (int tick = 0; tick < 100; ++tick) {
     REQUIRE(pipeline.pushInput(block) == block.size());
     REQUIRE(pipeline.processOne(copyProcessor, [] {}) == true);
@@ -91,8 +89,6 @@ TEST_CASE("realtime pipeline discards DSP output when resync starts during proce
   REQUIRE_FALSE(processed.load(std::memory_order_acquire));
   REQUIRE(pipeline.stats().logical_depth == 0U);
 
-  // A second callback acknowledges that the old output queue is drained. The reset then primes
-  // only fresh silence; the 0.75 marker from the interrupted DSP generation is never published.
   REQUIRE(pipeline.popOutput(output) == 0U);
   REQUIRE(pipeline.processOne(copyProcessor, [] {}));
   REQUIRE(pipeline.stats().logical_depth == RealtimeAudioPipeline::kNominalPrimingFrames);
@@ -125,15 +121,12 @@ TEST_CASE("realtime pipeline drains output published after the first reset callb
                     std::memory_order_release);
   });
 
-  // The worker has already observed `running`, but has not pushed its marker output yet.
   publishGateReached.wait();
   REQUIRE(pipeline.pushInput(block) == block.size());
   REQUIRE(pipeline.pushInput(block) == block.size());
   REQUIRE(pipeline.pushInput(block) == 0U);
   REQUIRE(pipeline.stats().phase == PipelinePhase::reset_pending);
 
-  // This callback sees an empty output ring. It must not acknowledge the drain while the old
-  // worker generation can still publish into that ring.
   REQUIRE(pipeline.popOutput(output) == 0U);
   releasePublish.count_down();
   worker.join();
@@ -142,8 +135,6 @@ TEST_CASE("realtime pipeline drains output published after the first reset callb
   REQUIRE(pipeline.stats().output_depth == RealtimeAudioPipeline::kBlockFrames);
   REQUIRE(pipeline.stats().logical_depth == RealtimeAudioPipeline::kMaximumTotalQueueFrames);
 
-  // Reset cannot complete from the premature callback. A later callback drains the marker,
-  // acknowledges this reset generation, and only then may the worker prime fresh silence.
   REQUIRE_FALSE(pipeline.processOne(copyProcessor, [] {}));
   REQUIRE(pipeline.stats().output_depth == RealtimeAudioPipeline::kBlockFrames);
   REQUIRE(pipeline.popOutput(output) == 0U);
@@ -184,8 +175,6 @@ TEST_CASE("realtime pipeline includes in-flight DSP frames in the concurrent que
   REQUIRE(pipeline.pushInput(block) == block.size());
   REQUIRE(pipeline.stats().logical_depth == RealtimeAudioPipeline::kMaximumTotalQueueFrames);
 
-  // The rings contain only 960 frames here, while another 480-frame block is inside DSP. A cap
-  // based only on ring depths would incorrectly accept this block and reach 1,920 logical frames.
   REQUIRE(pipeline.pushInput(block) == 0U);
   const auto capped = pipeline.stats();
   REQUIRE(capped.phase == PipelinePhase::reset_pending);

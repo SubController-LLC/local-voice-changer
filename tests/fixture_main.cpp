@@ -71,7 +71,7 @@ void writeExtensiblePcm(const std::filesystem::path& path, const std::vector<flo
   }
 }
 
-} // namespace
+}
 
 int main(const int argc, char** argv) {
   if (argc < 2 || argc > 3) {

@@ -29,7 +29,7 @@ namespace {
   return total;
 }
 
-} // namespace
+}
 
 TEST_CASE("voice settings enforce validation ranges") {
   CHECK(vvc::dsp::VoiceProcessor::isValid({3.0F, 2.0F}));

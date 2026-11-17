@@ -55,7 +55,7 @@ namespace fs = std::filesystem;
   return output;
 }
 
-} // namespace
+}
 
 AppSettings loadAppSettings() {
   AppSettings settings;
@@ -71,8 +71,7 @@ AppSettings loadAppSettings() {
     const nlohmann::json json = nlohmann::json::parse(stream, nullptr, true, true);
     settings.capture_device = utf8ToWide(json.value("capture_device", std::string{}));
     settings.playback_device = utf8ToWide(json.value("playback_device", std::string{}));
-    // Legacy preset and semitone fields are intentionally accepted but ignored. The public beta
-    // has one validated Natural voice.
+
     settings.bypassed = json.value("bypassed", false);
   } catch (...) {
     return AppSettings{};
@@ -98,8 +97,7 @@ void saveAppSettings(const AppSettings& settings) {
     std::ofstream stream(path, std::ios::trunc);
     stream << json.dump(2) << '\n';
   } catch (...) {
-    // Settings are a convenience; audio must continue even if persistence is unavailable.
   }
 }
 
-} // namespace vvc::windows
+}

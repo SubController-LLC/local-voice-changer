@@ -16,4 +16,4 @@ struct WavData {
 [[nodiscard]] WavData readMonoWav48k(const std::filesystem::path& path);
 void writeMonoPcm16Wav(const std::filesystem::path& path, const WavData& audio);
 
-} // namespace vvc::audio
+}

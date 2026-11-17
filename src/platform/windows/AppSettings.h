@@ -13,4 +13,4 @@ struct AppSettings {
 [[nodiscard]] AppSettings loadAppSettings();
 void saveAppSettings(const AppSettings& settings);
 
-} // namespace vvc::windows
+}

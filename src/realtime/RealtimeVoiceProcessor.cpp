@@ -16,10 +16,10 @@ namespace {
 
 constexpr float kPitchSmoothingPerBlock = 0.18F;
 constexpr float kFormantSmoothingPerBlock = 0.12F;
-constexpr float kMixRampSamples = 960.0F; // 20 ms at 48 kHz
+constexpr float kMixRampSamples = 960.0F;
 constexpr float kAnalysisWindowSeconds = 0.05F;
 constexpr float kAnalysisIntervalSeconds = 0.0125F;
-constexpr float kOutputCeiling = 0.8912509F; // -1 dBFS
+constexpr float kOutputCeiling = 0.8912509F;
 
 [[nodiscard]] float moveTowards(const float current, const float target, const float step) {
   if (current < target) {
@@ -28,7 +28,7 @@ constexpr float kOutputCeiling = 0.8912509F; // -1 dBFS
   return std::max(current - step, target);
 }
 
-} // namespace
+}
 
 struct RealtimeVoiceProcessor::Impl {
   explicit Impl(const float rate)
@@ -37,8 +37,7 @@ struct RealtimeVoiceProcessor::Impl {
     if (std::abs(sample_rate - 48'000.0F) > 0.5F) {
       throw std::invalid_argument("RealtimeVoiceProcessorは48 kHz専用です。");
     }
-    // A 50 ms speech window with 4x overlap keeps the spectral algorithm's total input+output
-    // latency at 62.5 ms. Split computation spreads FFT work across intervals.
+
     stretch.configure(1, static_cast<int>(sample_rate * kAnalysisWindowSeconds),
                       static_cast<int>(sample_rate * kAnalysisIntervalSeconds), true);
     stretch.setTransposeSemitones(current_pitch, 8'000.0F / sample_rate);
@@ -155,4 +154,4 @@ int RealtimeVoiceProcessor::algorithmLatencySamples() const {
   return impl_->stretch.inputLatency() + impl_->stretch.outputLatency();
 }
 
-} // namespace vvc::realtime
+}

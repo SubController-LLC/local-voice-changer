@@ -156,7 +156,7 @@ void writeU32(std::ostream& stream, const std::uint32_t value) {
   return std::bit_cast<float>(raw);
 }
 
-} // namespace
+}
 
 WavData readMonoWav48k(const std::filesystem::path& path) {
   std::ifstream stream(path, std::ios::binary | std::ios::ate);
@@ -298,4 +298,4 @@ void writeMonoPcm16Wav(const std::filesystem::path& path, const WavData& audio) 
   }
 }
 
-} // namespace vvc::audio
+}

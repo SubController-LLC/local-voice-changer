@@ -26,13 +26,10 @@ struct AudioLifecycleSnapshot {
   AudioLifecycleGeneration generation = 0U;
 };
 
-// Thread-safe lifecycle reducer. Audio callbacks may publish failure events, while the UI thread
-// consumes the single cleanup request and owns device destruction.
 class AudioLifecycle {
 public:
   [[nodiscard]] bool beginStart() noexcept;
-  // Session-bound transitions reject work captured before a stop/restart. fail() returns true only
-  // for the caller that publishes the recoverable error, allowing it to gate related side effects.
+
   [[nodiscard]] bool markRunning(AudioLifecycleGeneration expectedGeneration) noexcept;
   [[nodiscard]] bool fail(AudioFailureReason reason,
                           AudioLifecycleGeneration expectedGeneration) noexcept;
@@ -59,4 +56,4 @@ private:
   std::atomic<std::uint64_t> value_{encode(AudioLifecycleState::stopped, AudioFailureReason::none)};
 };
 
-} // namespace vvc::realtime
+}

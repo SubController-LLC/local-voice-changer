@@ -134,8 +134,7 @@ namespace {
   AudioEngine audio;
   std::wstring error;
   if (!audio.refreshDevices(error)) {
-    // Hosted Windows runners can have the Audio Service disabled and no endpoints. The GUI must
-    // still start and present a useful message; physical streaming remains a hardware QA gate.
+
     return !error.empty();
   }
   const AudioStats stats = audio.takeStats();
@@ -143,7 +142,7 @@ namespace {
          stats.algorithm_latency_ms > 0;
 }
 
-} // namespace
+}
 
 int runExecutableSelfTest() noexcept {
   try {
@@ -169,4 +168,4 @@ int runExecutableSelfTest() noexcept {
   }
 }
 
-} // namespace vvc::windows
+}
