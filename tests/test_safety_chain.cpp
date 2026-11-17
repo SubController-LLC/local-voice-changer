@@ -27,7 +27,7 @@ namespace {
   return samples;
 }
 
-} // namespace
+}
 
 TEST_CASE("80 Hz high-pass attenuates low frequency more than speech-band frequency") {
   auto low = sine(40.0);

@@ -86,4 +86,4 @@ private:
   SoftLimiter limiter_;
 };
 
-} // namespace vvc::dsp
+}

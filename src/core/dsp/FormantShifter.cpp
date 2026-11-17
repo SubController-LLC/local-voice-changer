@@ -11,7 +11,7 @@ namespace {
 constexpr std::array<float, 4> kReferenceFormants{500.0F, 1'500.0F, 2'500.0F, 3'500.0F};
 constexpr std::array<float, 4> kQualities{1.1F, 1.4F, 1.7F, 1.9F};
 
-} // namespace
+}
 
 FormantShifter::FormantShifter(const float sampleRate) : sample_rate_(sampleRate) {}
 
@@ -76,7 +76,6 @@ void FormantShifter::process(const std::span<float> samples, const float semiton
     updateFilters(semitones);
   }
 
-  // Paired cuts and boosts move broad vocal resonances without changing the harmonic pitch.
   for (float& sample : samples) {
     for (std::size_t band = 0; band < kReferenceFormants.size(); ++band) {
       sample = boosts_[band].process(cuts_[band].process(sample));
@@ -84,4 +83,4 @@ void FormantShifter::process(const std::span<float> samples, const float semiton
   }
 }
 
-} // namespace vvc::dsp
+}

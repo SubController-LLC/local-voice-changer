@@ -15,4 +15,4 @@ struct SignalMetrics {
 [[nodiscard]] SignalMetrics measureSignal(std::span<const float> samples,
                                           float clipThreshold = 1.0F);
 
-} // namespace vvc::audio
+}

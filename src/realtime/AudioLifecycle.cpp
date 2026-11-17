@@ -21,7 +21,7 @@ constexpr std::uint64_t kCleanupRequestedMask = std::uint64_t{1} << 16U;
   return static_cast<AudioLifecycleGeneration>(value >> 32U);
 }
 
-} // namespace
+}
 
 bool AudioLifecycle::beginStart() noexcept {
   std::uint64_t current = value_.load(std::memory_order_acquire);
@@ -125,4 +125,4 @@ bool AudioLifecycle::isRunning() const noexcept {
   return decodeState(value_.load(std::memory_order_acquire)) == AudioLifecycleState::running;
 }
 
-} // namespace vvc::realtime
+}

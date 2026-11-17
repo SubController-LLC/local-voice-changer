@@ -102,7 +102,7 @@ private:
   std::filesystem::path path_;
 };
 
-} // namespace
+}
 
 TEST_CASE("PCM16 WAV round-trips as 48 kHz mono") {
   TemporaryDirectory temporary;

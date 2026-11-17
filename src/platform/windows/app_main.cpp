@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-// Windows must precede commctrl because the latter relies on core Win32 type definitions.
 // clang-format off
 #include <windows.h>
 #include <commctrl.h>
@@ -580,7 +579,7 @@ private:
   return exitCode;
 }
 
-} // namespace
+}
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR commandLine, int) {
   const std::wstring_view arguments = commandLine != nullptr ? commandLine : L"";

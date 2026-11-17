@@ -108,8 +108,6 @@ TEST_CASE("audio lifecycle rejects a delayed failure from the previous session")
   const auto oldGeneration = lifecycle.snapshot().generation;
   REQUIRE(lifecycle.markRunning(oldGeneration));
 
-  // Models a notification that captured the old running snapshot, then resumed only after the UI
-  // stopped that device and started its replacement.
   lifecycle.stop();
   REQUIRE(lifecycle.beginStart());
   const auto newGeneration = lifecycle.snapshot().generation;

@@ -14,7 +14,7 @@ namespace {
   return std::exp(-1.0F / (seconds * sampleRate));
 }
 
-} // namespace
+}
 
 HighPassFilter::HighPassFilter(const float sampleRate, const float cutoffHz) {
   const float timeConstant = 1.0F / (2.0F * std::numbers::pi_v<float> * cutoffHz);
@@ -113,4 +113,4 @@ void SafetyChain::process(const std::span<float> samples) {
 
 float SafetyChain::limiterCeilingLinear() const { return limiter_.ceilingLinear(); }
 
-} // namespace vvc::dsp
+}

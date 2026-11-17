@@ -16,7 +16,7 @@ namespace {
          }).begin() != text.end();
 }
 
-} // namespace
+}
 
 bool isSafeCaptureName(const std::wstring_view name) {
   return !name.empty() && !containsInsensitive(name, L"CABLE Output");
@@ -66,4 +66,4 @@ std::optional<std::size_t> chooseCablePlayback(const std::span<const RoutingDevi
   return firstCable;
 }
 
-} // namespace vvc::realtime
+}

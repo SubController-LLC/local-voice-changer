@@ -15,7 +15,6 @@
 
 #include <miniaudio.h>
 
-// Windows must precede avrt because the latter uses core Win32 type definitions.
 // clang-format off
 #include <windows.h>
 #include <avrt.h>
@@ -76,7 +75,7 @@ notificationFailure(const ma_device_notification_type type) {
   }
 }
 
-} // namespace
+}
 
 struct AudioEngine::Impl {
   Impl() {
@@ -244,8 +243,7 @@ struct AudioEngine::Impl {
     if (device_initialized) {
       ma_device_stop(&device);
     }
-    // The UI thread is the sole cleanup owner and never calls this from the DSP worker, so a
-    // joinable thread always satisfies std::thread::join's preconditions.
+
     if (worker.joinable()) {
       worker.join();
     }
@@ -429,4 +427,4 @@ AudioStats AudioEngine::takeStats() {
           latencyMs};
 }
 
-} // namespace vvc::windows
+}

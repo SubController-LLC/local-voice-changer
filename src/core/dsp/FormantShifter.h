@@ -36,4 +36,4 @@ private:
   std::array<PeakingFilter, 4> boosts_;
 };
 
-} // namespace vvc::dsp
+}

@@ -22,7 +22,7 @@ namespace {
   return signal;
 }
 
-} // namespace
+}
 
 TEST_CASE("zero formant shift is bit-identical") {
   auto signal = makeVoiceLikeSignal();

@@ -310,7 +310,7 @@ int execute(const std::vector<fs::path>& commandLine) {
   }
 }
 
-} // namespace
+}
 
 #ifdef _WIN32
 int wmain(const int argc, wchar_t** argv) {

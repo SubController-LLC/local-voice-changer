@@ -8,7 +8,7 @@ namespace {
 
 constexpr std::size_t kRingCapacity = 2'048U;
 
-} // namespace
+}
 
 RealtimeAudioPipeline::RealtimeAudioPipeline()
     : input_ring_(kRingCapacity), output_ring_(kRingCapacity) {}
@@ -185,4 +185,4 @@ void RealtimeAudioPipeline::updateMaximum(std::atomic<std::size_t>& destination,
   }
 }
 
-} // namespace vvc::realtime
+}

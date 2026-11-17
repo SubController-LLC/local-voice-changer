@@ -45,22 +45,17 @@ public:
 
   RealtimeAudioPipeline();
 
-  // Call only while callbacks and the worker are stopped.
   void prepare();
   void suspend() noexcept;
 
-  // Callback-side operations. They are allocation-free, lock-free, and noexcept.
   std::size_t pushInput(std::span<const float> input) noexcept;
   std::size_t popOutput(std::span<float> output) noexcept;
 
-  // Worker-side operation. Exactly one worker may call this method.
   template <class Process, class Reset> bool processOne(Process&& process, Reset&& reset) noexcept {
     return processOneImpl(std::forward<Process>(process), std::forward<Reset>(reset),
                           []() noexcept {});
   }
 
-  // Exposes the otherwise zero-overhead point immediately after the final phase check so tests
-  // can deterministically exercise a reset racing the output publication.
   template <class Process, class Reset, class BeforePublish>
   bool processOneWithPublishHookForTesting(Process&& process, Reset&& reset,
                                            BeforePublish&& beforePublish) noexcept {
@@ -115,9 +110,6 @@ private:
       return false;
     }
 
-    // This flag and the second phase read form a seq_cst publication gate with the callback's
-    // reset transition. Either this worker observes the reset, or the callback observes an active
-    // worker and withholds its drain acknowledgement until a later callback.
     worker_in_flight_.store(true, std::memory_order_seq_cst);
     const auto finishWorkerAttempt = [this] {
       worker_in_flight_.store(false, std::memory_order_seq_cst);
@@ -154,9 +146,7 @@ private:
     for (float& sample : output) {
       sample = std::isfinite(sample) ? std::clamp(sample, -kMinusOneDbfs, kMinusOneDbfs) : 0.0F;
     }
-    // A callback can request a reset while DSP is running. Its input remains included in the
-    // logical frame reservation until this point, but output from that old generation must not
-    // be published into the newly-reset stream.
+
     if (phase_.load(std::memory_order_acquire) != PipelinePhase::running) {
       releaseLogicalFrames(input.size());
       finishWorkerAttempt();
@@ -196,8 +186,7 @@ private:
   std::atomic<bool> worker_in_flight_{false};
   std::atomic<std::uint64_t> reset_epoch_{0U};
   std::atomic<std::uint64_t> drained_epoch_{0U};
-  // Counts queued, callback-reserved, and worker-in-flight frames. Moving a block from the input
-  // ring through DSP to the output ring does not change this value.
+
   std::atomic<std::size_t> logical_frames_{0U};
   std::atomic<std::size_t> max_input_depth_{0U};
   std::atomic<std::size_t> max_output_depth_{0U};
@@ -210,4 +199,4 @@ private:
   std::atomic<std::uint64_t> fatal_dsp_failures_{0U};
 };
 
-} // namespace vvc::realtime
+}

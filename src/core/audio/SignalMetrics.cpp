@@ -31,4 +31,4 @@ SignalMetrics measureSignal(const std::span<const float> samples, const float cl
   return metrics;
 }
 
-} // namespace vvc::audio
+}

@@ -11,11 +11,9 @@
 
 namespace vvc::realtime {
 
-// Single-producer/single-consumer audio FIFO. Storage is allocated once at construction;
-// push/pop perform no locks, allocation, logging, or system calls on the audio callback.
 #ifdef _MSC_VER
 #pragma warning(push)
-// Cache-line separation intentionally pads this type to avoid false sharing between callbacks.
+
 #pragma warning(disable : 4324)
 #endif
 class AudioRingBuffer {
@@ -31,9 +29,7 @@ public:
   [[nodiscard]] std::size_t capacity() const { return capacity_; }
 
   [[nodiscard]] std::size_t availableToRead() const {
-    // Reading the consumer position first creates a transitive happens-before chain from the
-    // producer position observed by that consumer. The cap also keeps a third-party diagnostics
-    // observer safe across counter wraparound or a deliberately stale mixed snapshot.
+
     const std::size_t read = read_position_.load(std::memory_order_acquire);
     const std::size_t write = write_position_.load(std::memory_order_acquire);
     return std::min(write - read, capacity_);
@@ -59,8 +55,6 @@ public:
     return count;
   }
 
-  // Advances only the consumer-owned read position. This is safe while the producer is active,
-  // but it must be called by the same thread that normally calls pop().
   std::size_t discardOldest(const std::size_t requestedCount) {
     const std::size_t read = read_position_.load(std::memory_order_relaxed);
     const std::size_t write = write_position_.load(std::memory_order_acquire);
@@ -69,7 +63,6 @@ public:
     return count;
   }
 
-  // Only call while producer and consumer are stopped.
   void clear() {
     read_position_.store(0U, std::memory_order_relaxed);
     write_position_.store(0U, std::memory_order_relaxed);
@@ -109,4 +102,4 @@ private:
 #pragma warning(pop)
 #endif
 
-} // namespace vvc::realtime
+}

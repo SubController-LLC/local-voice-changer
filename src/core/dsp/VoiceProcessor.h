@@ -39,4 +39,4 @@ private:
   std::uint32_t sample_rate_;
 };
 
-} // namespace vvc::dsp
+}

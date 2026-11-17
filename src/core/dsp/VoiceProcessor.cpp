@@ -15,7 +15,7 @@
 namespace vvc::dsp {
 namespace {
 
-constexpr float kOutputCeiling = 0.8912509F; // -1 dBFS
+constexpr float kOutputCeiling = 0.8912509F;
 
 struct StretchedAudio {
   std::vector<float> samples;
@@ -105,7 +105,7 @@ void matchRmsAndProtect(std::vector<float>& samples, const double targetRms) {
   sanitizeAndProtect(samples);
 }
 
-} // namespace
+}
 
 VoiceProcessor::VoiceProcessor(const std::uint32_t sampleRate) : sample_rate_(sampleRate) {
   if (sampleRate != 48'000U) {
@@ -159,4 +159,4 @@ bool VoiceProcessor::isValid(const VoiceSettings& settings) {
          settings.formant_semitones >= -2.0F && settings.formant_semitones <= 6.0F;
 }
 
-} // namespace vvc::dsp
+}

@@ -20,4 +20,4 @@ struct RoutingDevice {
 [[nodiscard]] std::optional<std::size_t> chooseCablePlayback(std::span<const RoutingDevice> devices,
                                                              std::wstring_view savedName = {});
 
-} // namespace vvc::realtime
+}
